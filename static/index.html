@@ -3,7 +3,7 @@
         <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
         <title>lzpico</title>
 
-        <meta name="viewport" content="width=device-width, initial-scale=0.7, maximum-scale=0.7" />
+        <meta name="viewport" content="width=device-width, initial-scale=0.62, maximum-scale=0.62" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
 
         <script src="incppect.js"></script>
@@ -30,8 +30,8 @@
                 padding: 0;
                 margin: 0;
                 display: block;
-                width: 820px;
-                height: 420px;
+                width: 600px;
+                height: 800px;
                 background-color: #000;
             }
 
@@ -101,7 +101,7 @@
         <div id=main-container align=left width=100% style='padding: 0px; margin: 0px;'>
             <div id="client-info" style="display: none;"></div>
             <input type="range" min="16" max="200" value="16" class="slider" id="update_freq_ms" style="display: none;"
-                                    onChange="incppect.k_requests_update_freq_ms = this.value; update_freq_ms_out.value = this.value;">
+                   onChange="incppect.k_requests_update_freq_ms = this.value; update_freq_ms_out.value = this.value;">
             <output id="update_freq_ms_out" style="display: none;">16</output>
 
             <canvas id="canvas_main" class="emscripten">Your browser does not support the HTML5 canvas tag.</canvas>
