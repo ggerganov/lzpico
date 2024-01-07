@@ -44,7 +44,7 @@ struct VSync {
 };
 
 struct State {
-    std::string ip = "192.168.1.73";
+    std::string ip = "10.0.6.88";
 
     // port 3
     int val3 = 0;
@@ -326,14 +326,18 @@ int main(int argc, char ** agrv) {
                     const float x = center_x + radius * cos(angle);
                     const float y = center_y + radius * sin(angle);
 
-                    const bool is_selected = (val & 0x7) == i;
+                    const bool is_selected = ((val + 1) & 0x7) == i;
 
                     ImGui::SetCursorPos({ x - but / 2, y - but / 2 });
                     ImGui::PushID(i);
                     ImGui::PushStyleColor(ImGuiCol_Button,        is_selected ? ImVec4(0, 0.85, 0, 1) : ImVec4(0.5, 0.5, 0.5, 1));
                     if (ImGui::Button("##but", { but, but })) {
                         printf("button %d selected\n", i);
-                        state.portWrite(3, i);
+                        if (i > 0) {
+                            state.portWrite(3, i - 1);
+                        } else {
+                            state.portWrite(3, 7);
+                        }
                         state.portRead(3);
                     }
                     ImGui::PopStyleColor(1);
