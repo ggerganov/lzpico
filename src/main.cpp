@@ -44,7 +44,7 @@ struct VSync {
 };
 
 struct State {
-    std::string ip = "10.0.6.88";
+    std::string ip = "10.0.6.150";
 
     // port 3
     int val3 = 0;
@@ -99,6 +99,8 @@ struct State {
     }
 
     void portWrite(int port, int val) {
+        val = (char) val;
+
         const std::string obj = port == 3 ? "enterprises.19865.1.2.1.0.2" : "enterprises.19865.1.2.2.0.2";
         const std::string cmd = "snmpset -v1 -t 1 -r 1 -c private " + ip + " " + obj + " i " + std::to_string(val);
 
@@ -274,29 +276,83 @@ int main(int argc, char ** agrv) {
                     ImGui::SameLine();
                 }
 
-                ImGui::Text("Port 3");
+                ImGui::Text("P3");
             }
 
+            static bool is_port_5 = false;
+
             // display port 5
+            //{
+            //    const auto & pins = state.pins5;
+
+            //    ImGui::Text("");
+
+            //    for (int i = 7; i >= 0; --i) {
+            //        ImGui::PushID(i);
+            //        ImGui::PushStyleColor(ImGuiCol_CheckMark,      pins[i] ? ImVec4(0, 0.85, 0, 1) : ImVec4(0.5, 0.5, 0.5, 1));
+            //        ImGui::PushStyleColor(ImGuiCol_FrameBg,        pins[i] ? ImVec4(0, 0.85, 0, 1) : ImVec4(0.5, 0.5, 0.5, 1));
+            //        ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, pins[i] ? ImVec4(0, 0.85, 0, 1) : ImVec4(0.5, 0.5, 0.5, 1));
+            //        ImGui::PushStyleColor(ImGuiCol_FrameBgActive,  pins[i] ? ImVec4(0, 0.85, 0, 1) : ImVec4(0.5, 0.5, 0.5, 1));
+            //        bool checked = pins[i];
+            //        if (ImGui::Checkbox("##pin", &checked)) {
+            //            printf("XXXXXXXXXXX\n");
+            //        }
+            //        ImGui::PopStyleColor(4);
+            //        ImGui::PopID();
+            //        ImGui::SameLine();
+            //    }
+
+            //    ImGui::Text("P5");
+
+            //    ImGui::SameLine();
+            //    ImGui::Checkbox("##is_port_5", &is_port_5);
+            //}
+
             {
+                ImGui::PushID(0);
+
+                const float but = 48.0f;
+
+                const auto & val  = state.val5;
                 const auto & pins = state.pins5;
 
                 ImGui::Text("");
 
-                for (int i = 7; i >= 0; --i) {
+                const float center_x = 0.5f*but + ImGui::GetCursorPosX();
+                const float center_y = 0.5f*but + ImGui::GetCursorPosY();
+
+                for (int i = 0; i < 8; ++i) {
+                    const float x = center_x + i*(1.13f*but);
+                    const float y = center_y;
+
+                    const bool is_selected = val & (1 << i);
+
+                    ImGui::SetCursorPos({ x - but / 2, y - but / 2 });
                     ImGui::PushID(i);
-                    ImGui::PushStyleColor(ImGuiCol_CheckMark,      pins[i] ? ImVec4(0, 0.85, 0, 1) : ImVec4(0.5, 0.5, 0.5, 1));
-                    ImGui::PushStyleColor(ImGuiCol_FrameBg,        pins[i] ? ImVec4(0, 0.85, 0, 1) : ImVec4(0.5, 0.5, 0.5, 1));
-                    ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, pins[i] ? ImVec4(0, 0.85, 0, 1) : ImVec4(0.5, 0.5, 0.5, 1));
-                    ImGui::PushStyleColor(ImGuiCol_FrameBgActive,  pins[i] ? ImVec4(0, 0.85, 0, 1) : ImVec4(0.5, 0.5, 0.5, 1));
-                    bool checked = pins[i];
-                    ImGui::Checkbox("##pin", &checked);
-                    ImGui::PopStyleColor(4);
+                    ImGui::PushStyleColor(ImGuiCol_Button, is_selected ? ImVec4(0, 0.85, 0, 1) : ImVec4(0.5, 0.5, 0.5, 1));
+                    if (ImGui::Button("##but", { 0.8f*but, 0.8f*but })) {
+                        printf("button %d selected\n", i);
+
+                        // per-pin
+                        int v = val;
+                        if (i >= 4) {
+                            v = v & 0xF;
+                            v |= (1 << i);
+                        } else {
+                            v ^= (1 << i);
+                        }
+
+                        state.portWrite(5, v);
+                        state.portRead(5);
+                    }
+                    ImGui::PopStyleColor(1);
                     ImGui::PopID();
-                    ImGui::SameLine();
                 }
 
-                ImGui::Text("Port 5");
+                ImGui::SameLine();
+                ImGui::Text("P5");
+
+                ImGui::PopID();
             }
 
             // draw 8 buttons in a circle
@@ -311,6 +367,8 @@ int main(int argc, char ** agrv) {
             // 7: 315 degrees
             // print the angle below each button
             {
+                ImGui::PushID(1);
+
                 const auto & val  = state.val3;
                 const auto & pins = state.pins3;
 
@@ -326,18 +384,25 @@ int main(int argc, char ** agrv) {
                     const float x = center_x + radius * cos(angle);
                     const float y = center_y + radius * sin(angle);
 
-                    const bool is_selected = ((val + 1) & 0x7) == i;
+                    //const bool is_selected = ((val + 1) & 0x7) == i;
+                    const bool is_selected = val == (1 << i);
 
                     ImGui::SetCursorPos({ x - but / 2, y - but / 2 });
                     ImGui::PushID(i);
                     ImGui::PushStyleColor(ImGuiCol_Button,        is_selected ? ImVec4(0, 0.85, 0, 1) : ImVec4(0.5, 0.5, 0.5, 1));
                     if (ImGui::Button("##but", { but, but })) {
                         printf("button %d selected\n", i);
-                        if (i > 0) {
-                            state.portWrite(3, i - 1);
-                        } else {
-                            state.portWrite(3, 7);
-                        }
+                        // original
+                        //if (i > 0) {
+                        //    state.portWrite(3, i - 1);
+                        //} else {
+                        //    state.portWrite(3, 7);
+                        //}
+
+                        // per-pin
+                        int v = 1 << i;
+
+                        state.portWrite(3, v);
                         state.portRead(3);
                     }
                     ImGui::PopStyleColor(1);
@@ -349,6 +414,8 @@ int main(int argc, char ** agrv) {
                         ImGui::Text("%s", txt.c_str());
                     }
                 }
+
+                ImGui::PopID();
             }
         }
 
